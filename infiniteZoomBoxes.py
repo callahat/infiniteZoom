@@ -1,5 +1,7 @@
 from gimpfu import *
 
+import math
+
 # This method is for planning.
 # finalXOrg and finalYOrg are the coordinates for the top left rectangle that will be the smallest
 #     rectangle
@@ -8,6 +10,12 @@ from gimpfu import *
 # steps - the number of times the original image will be scaled down incrementally to reach the smallest size
 # Your image will have a new layer with these rectangles drawn onto one layer
 def infiniteZoomBoxes(img, referenceLayer, finalXOrg, finalYOrg, scale, steps=-1) :
+    def linearCoef(step, steps) :
+        return step / float(steps)
+    
+    def inverseLogCoef(step, steps) :
+        return (1 - math.log(step) / math.log(steps) )
+        
     old_brush = pdb.gimp_context_get_brush()
     pdb.gimp_context_set_brush('Circle (01)')
     
@@ -46,17 +54,17 @@ def infiniteZoomBoxes(img, referenceLayer, finalXOrg, finalYOrg, scale, steps=-1
     pdb.gimp_pencil(currLayer, 4, [oldWidth,0,         xRightRange,yTopRange])
     pdb.gimp_pencil(currLayer, 4, [oldWidth,oldHeight, xRightRange,yDownRange])
     
-    for step in range(0, steps):
+    for step in range(1, steps):
         #currLayer = referenceLayer.copy()
         #currLayer.name = 'scaleboxes'
         
         #print("Adding " + currLayer.name + " to img")
         #img.add_layer(currLayer, 0)
         
-        xLeftRangeD = xLeftRange - xLeftRange * step / steps
-        xRightRangeD = xRightRange + (oldWidth - xRightRange) * step / steps
-        yTopRangeD = yTopRange - yTopRange * step / steps
-        yDownRangeD = yDownRange + (oldHeight - yDownRange) * step / steps
+        xLeftRangeD = xLeftRange - xLeftRange * inverseLogCoef(step, steps)
+        xRightRangeD = xRightRange + (oldWidth - xRightRange) * inverseLogCoef(step, steps)
+        yTopRangeD = yTopRange - yTopRange * inverseLogCoef(step, steps)
+        yDownRangeD = yDownRange + (oldHeight - yDownRange) * inverseLogCoef(step, steps)
         
         pdb.gimp_pencil(currLayer, 10, [xLeftRangeD,yTopRangeD,
         xRightRangeD,yTopRangeD,
