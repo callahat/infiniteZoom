@@ -2,27 +2,58 @@ from gimpfu import *
 
 import math
 
-def generateRectangleCoordinates width, height, targetWidth, targetHeight, targetX, targetY, steps=1
+def generateRectangleCoordinates(width, height, targetWidth, targetHeight, targetX, targetY, steps=1) :
     coords = []
     
-    scaledWidth = targetWidth / float(width)
-    scaledHeight = targetHeight / float(height)
-    
     xLeftRange = targetX
-    xRightRange = targetX + scaledWidth
+    xRightRange = targetX + targetWidth
     yTopRange = targetY
-    yDownRange = targetY + scaledHeight
+    yDownRange = targetY + targetHeight
     
     for step in range(0, steps):
         xLeftRangeD = xLeftRange - xLeftRange * step / steps
-        xRightRangeD = xRightRange + (oldWidth - xRightRange) * step / steps
+        xRightRangeD = xRightRange + (width - xRightRange) * step / steps
         yTopRangeD = yTopRange - yTopRange * step / steps
-        yDownRangeD = yDownRange + (oldHeight - yDownRange) * step / steps
+        yDownRangeD = yDownRange + (height - yDownRange) * step / steps
         
-        coords << [xLeftRangeD, xRightRangeD, yTopRangeD, yDownRangeD]
+        coords.append( [xLeftRangeD, xRightRangeD, yTopRangeD, yDownRangeD] )
     return coords
-    
 
+# assumes the first set of rectangle coordinates is 
+def generateSelectBoxesFromCoordinates(width, height, rectangleCoordinates) :
+    xInitLeft, xInitRight, yInitTop, yInitDown = rectangleCoordinates[0]
+    xCenter = (xInitLeft + xInitRight) / 2.0
+    yCenter = (yInitTop + yInitDown) / 2.0
+    
+    print("Center:" + str((xCenter,yCenter)))
+    
+    print('here')
+    print(xInitLeft)
+    print(xInitRight)
+    print(yInitTop)
+    print(yInitDown)
+    
+    selectCoords = [ [xInitLeft, xInitRight, yInitTop, yInitDown] ]
+    
+    for coords in rectangleCoordinates[1:] :
+        print(coords)
+        xResizedLeft, xResizedRight, yResizedTop, yResizedDown = coords
+        
+        xSelectLeft = xCenter - xCenter / ( (xCenter-xResizedLeft) / float(xCenter-xInitLeft) )
+        xSelectRight = xCenter + (width - xCenter) / ( (xResizedRight-xCenter) / float(xInitRight-xCenter) )
+        
+        ySelectTop = yCenter - yCenter / ( (yCenter-yResizedTop) / float(yCenter-yInitTop))
+        ySelectDown = yCenter + (height - yCenter) / ((yResizedDown-yCenter) / float(yInitDown-yCenter))
+        
+        
+        print('select coord')
+        print(xSelectLeft)
+        print(xSelectRight)
+        print(ySelectTop)
+        print(ySelectDown)
+        
+        selectCoords.append( [xSelectLeft, xSelectRight, ySelectTop, ySelectDown] )
+    return selectCoords
 
 # reference Layer will be the image that will be scaled (such as background)
 # finalXOrg and finalYOrg are the coordinates for the top left rectangle that will be the smallest
