@@ -25,14 +25,6 @@ def generateSelectBoxesFromCoordinates(width, height, rectangleCoordinates) :
     xCenter = (xInitLeft + xInitRight) / 2.0
     yCenter = (yInitTop + yInitDown) / 2.0
     
-    print("Center:" + str((xCenter,yCenter)))
-    
-    print('here')
-    print(xInitLeft)
-    print(xInitRight)
-    print(yInitTop)
-    print(yInitDown)
-    
     selectCoords = [ [xInitLeft, xInitRight, yInitTop, yInitDown] ]
     
     for coords in rectangleCoordinates[1:] :
@@ -44,12 +36,6 @@ def generateSelectBoxesFromCoordinates(width, height, rectangleCoordinates) :
         
         ySelectTop = yCenter - yCenter / ( (yCenter-yResizedTop) / float(yCenter-yInitTop))
         ySelectDown = yCenter + (height - yCenter) / ((yResizedDown-yCenter) / float(yInitDown-yCenter))
-        
-        print('select coord')
-        print(xSelectLeft)
-        print(xSelectRight)
-        print(ySelectTop)
-        print(ySelectDown)
         
         selectCoords.append( [xSelectLeft, xSelectRight, ySelectTop, ySelectDown] )
     return selectCoords
