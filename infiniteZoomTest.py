@@ -1,8 +1,9 @@
 import unittest
+import numpy
 
 import math
 
-def generateRectangleCoordinates(width, height, targetWidth, targetHeight, targetX, targetY, steps=1) :
+def generateRectangleCoordinates(width, height, targetWidth, targetHeight, targetX, targetY, how, steps=1) :
     xLeft = targetX
     xRight = targetX + targetWidth
     yTop = targetY
@@ -11,14 +12,14 @@ def generateRectangleCoordinates(width, height, targetWidth, targetHeight, targe
     xCenter = (xLeft + xRight) / 2.0
     yCenter = (yTop + yDown) / 2.0
     
-    coords =       [ [xLeft, xRight, yTop, yDown] ]
-    selectCoords = [ [xLeft, xRight, yTop, yDown] ]
+    coords =       []
+    selectCoords = []
     
-    for step in range(1, steps):
-        xResizedLeft = xLeft - xLeft * step / steps
-        xResizedRight = xRight + (width - xRight) * step / steps
-        yResizedTop = yTop - yTop * step / steps
-        yResizedDown = yDown + (height - yDown) * step / steps
+    for step in range(0, steps):
+        xResizedLeft = xLeft - xLeft * how(step, steps)
+        xResizedRight = xRight + (width - xRight) * how(step, steps)
+        yResizedTop = yTop - yTop * how(step, steps)
+        yResizedDown = yDown + (height - yDown) * how(step, steps)
         
         xSelectLeft = xCenter - xCenter / ( (xCenter-xResizedLeft) / float(xCenter-xLeft) )
         xSelectRight = xCenter + (width - xCenter) / ( (xResizedRight-xCenter) / float(xRight-xCenter) )
@@ -29,17 +30,42 @@ def generateRectangleCoordinates(width, height, targetWidth, targetHeight, targe
         selectCoords.append( [xSelectLeft, xSelectRight, ySelectTop, ySelectDown] )
     return [coords, selectCoords]
 
-rectCoords, selCoords = generateRectangleCoordinates(2592,1944,15,11,1100,760,5)
+def linearCoef(step, steps) :
+    return step / float(steps)
 
-expectedCoords = [[1100, 1115, 760, 771], [1100, 1115, 760, 771], [880, 1410, 608, 1005], [660, 1705, 456, 1240], [440, 2001, 304, 1474], [220, 2296, 152, 1709]]
-expectedSelCoords = [[1100, 1115, 760, 771], [0.0, 2952.0, 0.0, 1944.0], [1070.9890109890109, 1153.2314049586778, 738.76825396825393, 792.56367432150319], [1088.9385474860335, 1130.6527196652719, 751.89660743134084, 779.16016859852482], [1095.056179775281, 1122.9826524902071, 756.37703141928489, 774.6485532815808], [1098.1408450704225, 1119.1396718552799, 758.63732681336592, 772.36989931107576]]
+def inverseLogCoef(step, steps) :
+    return (1 - math.log(step+1) / (math.log(steps+1) + 0.00001) )
+
+def inverseRoot(step, steps) :
+    return (1-math.sqrt(steps-step) / max(1.0,math.sqrt(steps)))
+
+def inverseRoot2(step, steps) :
+    return (1-math.pow(step-steps,2) / max(1.0,math.pow(steps,2)))
+
+def squareCoef(step, steps) :
+     return math.pow(step,2) / max(1.0,math.pow(steps,2))
+
+
+rectCoords, selCoords = generateRectangleCoordinates(2592,1944,15,11,1100,760,linearCoef,5)
+
+def rountArrayOf4Floats( arrayOfFloats ):
+    return map( (lambda x: int(round(x))),arrayOfFloats )
+
+def rountArrayOfArrayOf4Floats( arrayOf4Floats ):
+    return map( (lambda x: rountArrayOf4Floats(x)),arrayOf4Floats )
+
+expectedCoords =    [[1100, 1115, 760,  771], [ 880, 1410, 608, 1006], [ 660, 1706, 456, 1240], [ 440, 2001, 304, 1475], [ 220, 2297, 152, 1709]]
+expectedSelCoords = [[   0, 2592,   0, 1944], [1071, 1144, 739,  792], [1089, 1126, 752,  779], [1095, 1120, 756,  775], [1098, 1117, 759,  772]]
+
+appxRectCoords = rountArrayOfArrayOf4Floats(rectCoords)
+appxSelCoords =  rountArrayOfArrayOf4Floats(selCoords)
 
 class HelperTests(unittest.TestCase):
     def testCoords(self):
-        self.failIf(rectCoords == expectedCoords)
+        numpy.testing.assert_array_equal(appxRectCoords, expectedCoords)
     
     def testSelCoords(self):
-        self.failIf(selCoords == expectedSelCoords)
+        numpy.testing.assert_array_equal(appxSelCoords, expectedSelCoords)
 
 def main():
     unittest.main()
