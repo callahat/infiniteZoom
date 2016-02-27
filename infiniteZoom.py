@@ -30,17 +30,23 @@ def generateRectangleCoordinates(width, height, targetWidth, targetHeight, targe
     xCenter = (xLeft + xRight) / 2.0
     yCenter = (yTop + yDown) / 2.0
     
-    coords = []
+    coords =       []
+    selectCoords = []
     
-    for step in range(0, steps+1):
+    for step in range(0, steps):
         xResizedLeft = xLeft - xLeft * how(step, steps)
         xResizedRight = xRight + (width - xRight) * how(step, steps)
         yResizedTop = yTop - yTop * how(step, steps)
         yResizedDown = yDown + (height - yDown) * how(step, steps)
         
+        xSelectLeft = xCenter - xCenter / ( (xCenter-xResizedLeft) / float(xCenter-xLeft) )
+        xSelectRight = xCenter + (width - xCenter) / ( (xResizedRight-xCenter) / float(xRight-xCenter) )
+        ySelectTop = yCenter - yCenter / ( (yCenter-yResizedTop) / float(yCenter-yTop))
+        ySelectDown = yCenter + (height - yCenter) / ((yResizedDown-yCenter) / float(yDown-yCenter))
+        
         coords.append( [xResizedLeft, xResizedRight, yResizedTop, yResizedDown] )
-    
-    return coords
+        selectCoords.append( [xSelectLeft, xSelectRight, ySelectTop, ySelectDown] )
+    return [coords, selectCoords]
 
 # reference Layer will be the image that will be scaled (such as background)
 # finalXOrg and finalYOrg are the coordinates for the top left rectangle that will be the smallest
@@ -85,12 +91,9 @@ def infiniteZoom(img, referenceLayer, finalXOrg, finalYOrg, scale, how, steps=15
     print("Full image is " + str((oldWidth," x ",oldHeight)))
     print("Image will be scaled to " + str((scaledWidth, " x ", scaledHeight)))
     
-    resizeCoords = generateRectangleCoordinates(oldWidth,oldHeight,scaledWidth,scaledHeight,finalXOrg,finalYOrg,how,steps)
+    resizeCoords, selCords = generateRectangleCoordinates(oldWidth,oldHeight,scaledWidth,scaledHeight,finalXOrg,finalYOrg,how,steps)
     
-    drawBoxWhite(referenceLayer, finalXOrg,finalXOrg+scaledWidth,finalYOrg,finalYOrg+scaledHeight)
-    
-    selCords = list(resizeCoords)
-    selCords.reverse()
+    #drawBoxWhite(referenceLayer, finalXOrg,finalXOrg+scaledWidth,finalYOrg,finalYOrg+scaledHeight)
     
     print("resize - Number of coords for " + str((steps)) + " steps:" + str((len(resizeCoords))))
     print("select - Number of coords for " + str((steps)) + " steps:" + str((len(selCords))))
@@ -104,6 +107,7 @@ def infiniteZoom(img, referenceLayer, finalXOrg, finalYOrg, scale, how, steps=15
     #    
     #    drawBox(smallerImage, xLeftSelect,xRightSelect,yTopSelect,yDownSelect)
     #    drawBoxRed(smallerImage, xLeftResize,xRightResize,yTopResize,yDownResize)
+    
     
     for i in range(0, len(resizeCoords)):
         xLeftSelect,xRightSelect,yTopSelect,yDownSelect = selCords[i]
@@ -124,9 +128,7 @@ def infiniteZoom(img, referenceLayer, finalXOrg, finalYOrg, scale, how, steps=15
         floating_sel.translate(-xOff,-yOff)
         print("Scaling to: " + str((oldWidth," x ",oldHeight)))
         floating_sel.scale(oldWidth,oldHeight,0)
-        print("here 1")
         pdb.gimp_floating_sel_to_layer(floating_sel)
-        print("here 2")
         floating_sel.name = "Step " + str((i))
         
         xLeftResize,xRightResize,yTopResize,yDownResize = resizeCoords[i]
@@ -138,13 +140,9 @@ def infiniteZoom(img, referenceLayer, finalXOrg, finalYOrg, scale, how, steps=15
         
         smallerImage = referenceLayer.copy()
         img.add_layer(smallerImage, 0)
-        print("here 2.5 ")
         smallerImage.scale(selectWidth,selectHeight,0)
-        print("here 3")
         smallerImage.translate(xLeftResize, yTopResize)
-        print("here 4")
         pdb.gimp_image_merge_down(img, smallerImage, 0)
-        print("here 5")
         
     pdb.gimp_context_set_brush( old_brush )
 
