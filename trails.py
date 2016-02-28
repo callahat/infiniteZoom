@@ -1,3 +1,6 @@
+def squareCoef(step, steps) :
+     return math.pow(steps-step,2) / max(1.0,math.pow(steps,2))
+
 scaling_types = [squareCoef]
 
 def generateWithAllTypes(image, scalingTypes, frames=30 ) :
