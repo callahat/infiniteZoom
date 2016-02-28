@@ -1,4 +1,4 @@
-scaling_types = [linearCoef, inverseLogCoef, inverseRoot, inverseRoot2, squareCoef]
+scaling_types = [squareCoef]
 
 def generateWithAllTypes(image, scalingTypes, frames=30 ) :
     for scaling_type in scalingTypes :

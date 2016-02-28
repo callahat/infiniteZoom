@@ -72,7 +72,7 @@ def infiniteZoom(img, referenceLayer, finalXOrg, finalYOrg, scale, how, steps=15
     yTopRange = finalYOrg
     yDownRange = finalYOrg + scaledHeight
     
-    for step in range(0, steps ):
+    for step in range(1, steps ):
         print("Step " + str(step))
         xLeftSelect = xLeftRange - xLeftRange * how(step, steps)
         xRightSelect = xRightRange + (oldWidth - xRightRange) * how(step, steps)
