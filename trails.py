@@ -10,6 +10,9 @@ def generateWithAllTypes(image, scalingTypes, frames=30 ) :
         new_image = pdb.gimp_image_duplicate(image)
         refLayer = new_image.layers[0]
         
-        infiniteZoom(new_image, refLayer, 1118, 760, 172, scaling_type, frames)
+        #for the gorilla image
+        #infiniteZoom(new_image, refLayer, 1118, 760, 172, scaling_type, frames)
+        #for the hallway image
+        infiniteZoom(new_image, refLayer, 457, 355, 15.53424658, scaling_type, frames)
         pdb.gimp_image_set_filename(new_image, scaling_type.__name__ + '.jpg')
         display = pdb.gimp_display_new(new_image)
